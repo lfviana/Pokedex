@@ -75,6 +75,7 @@ function App() {
   };
 
   // Filtrar a lista de Pokémon com base no tipo selecionado e texto pesquisado
+  // Condicional para verificar se as duas condições são satisfeitas individualmente ou em conjunto.
   const filteredPokemons = currentPokemons.filter((pokemon) => {
     if (selectedType && !pokemon.types.includes(selectedType)) {
       return false;
@@ -93,13 +94,17 @@ function App() {
     return <p>Error: {error}</p>;
   }
   //Retorno do código(irei explicar o passo a passo)
+  //Texto inicial com o título do Programa e uma imagem de pokebola ajustada ao lado do título
+  //Div para definir os 2 filtros (Busca e Tipo de pokémon)
+  //Atribuição de valor a variável Text com o setText e um onChange definindo o valor do filtro
+  //Atribuição de valor a variável com um select de várias opções definidas e um onChange definindo o valor do filtro a opção escolhida.
+  //Definição do valor da função criada na próxima parte do código com o valor filtered pokemons definido no filtro.
   return (
     <div className="container">
       <h1 className="text-3xl font-pokemon font-bold text-white flex items-center mb-10 justify-center">
   POKÉDEX
   <img src="https://img.freepik.com/icones-gratis/pokebola_318-196468.jpg" className="w-8 h-8 ml-2" alt="Pokebola" />
 </h1>
-
       <div className="flex mb-4 justify-center font-pokemon font-bold text-black">
       <div>
           <label htmlFor="searchInput">Name: </label>
@@ -144,7 +149,8 @@ function App() {
     </div>
   );
 }
-
+//Função feita para criação e estilização da tabela com as colunas NOME TIPO E FOTO
+//A função foi chamada acima com o valor dos filteredPokemons
 const Table = ({ data }) => {
   return (
       <table className="min-w-full divide-y divide-darkblue-200 justify-center">
@@ -169,14 +175,14 @@ const Table = ({ data }) => {
       </table>
   );
 };
-
+//Função de definição da paginação utilizando os valores definidos anteriormente.
 function Pagination({ pokemonsPerPage, totalPokemons, currentPage, paginate }) {
   const pageNumbers = [];
-
+//loop de repetição utilizado para mapear o número de páginas necessárias para retornar no return abaixo.
   for (let i = 1; i <= Math.ceil(totalPokemons / pokemonsPerPage); i++) {
     pageNumbers.push(i);
   }
-
+//Definição e estilização das páginas e seleção de página do programa.
   return (
     <nav>
       <ul className="pagination flex justify-center">
