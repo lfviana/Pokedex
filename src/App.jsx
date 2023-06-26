@@ -96,7 +96,7 @@ function App() {
   return (
     <div className="container">
       <h1 className="text-3xl font-pokemon font-bold text-white flex items-center mb-10 justify-center">
-  POKÉDEX - Lista de Pokémons
+  POKÉDEX
   <img src="https://img.freepik.com/icones-gratis/pokebola_318-196468.jpg" className="w-8 h-8 ml-2" alt="Pokebola" />
 </h1>
 
@@ -109,7 +109,7 @@ function App() {
             value={searchText}
             onChange={(e) => filterByText(e.target.value)}
             className="border border-black-300 rounded px-2 py-1"
-            placeholder='Text a Pokémon name here...'
+            placeholder='Search a pokémon...'
           />
         </div>
         <div className="ml-4">
