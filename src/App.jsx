@@ -3,6 +3,15 @@ import { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
+  /*Definição das variáveis que serão utilizadas para:
+    1 - Lista dos pokémons
+    2 - Inserir uma mensagem na tela enquanto os dados são carregados
+    3 - Definir os erros, caso ocorram.
+    4 - Setar a página atual
+    5 - Qtd de pokémons por página
+    6 - Tipo para o filtro de pokémon
+    7 - Texto para o filtro de busca
+    */
   const [pokemonList, setPokemonList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,10 +20,14 @@ function App() {
   const [selectedType, setSelectedType] = useState(null);
   const [searchText, setSearchText] = useState('');
 
+
+  //UseEffect para que o consumo da API seja feito apenas uma vez ao carregar a página
   useEffect(() => {
     fetchPokemonList();
   }, []);
 
+
+  //Consumo da API(Usando método fetch para receber as informações e inserí-las dentro das variáveis.)
   const fetchPokemonList = async () => {
     try {
       const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=600');
@@ -39,23 +52,23 @@ function App() {
     }
   };
 
-  // Paginação
+  // Definição de página
   const indexOfLastPokemon = currentPage * pokemonsPerPage;
   const indexOfFirstPokemon = indexOfLastPokemon - pokemonsPerPage;
   const currentPokemons = pokemonList.slice(indexOfFirstPokemon, indexOfLastPokemon);
 
-  // Função para mudar de página
+  // Setar de página
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  // Função para filtrar por tipo de Pokémon
+  // Filtro por tipo
   const filterByType = (type) => {
     setSelectedType(type);
     setCurrentPage(1);
   };
 
-  // Função para filtrar por texto
+  // Filtro por texto
   const filterByText = (text) => {
     setSearchText(text);
     setCurrentPage(1);
@@ -71,15 +84,15 @@ function App() {
     }
     return true;
   });
-
+  //Definindo a mensagem que deve ser apresentada no carregamento
   if (loading) {
-    return <p>Loading pokémons...</p>;
+    return <p className='text-center h-screen flex items-center justify-center'>Loading pokémons...</p>;
   }
-
+  //Definindo o erro, caso ocorra.
   if (error) {
     return <p>Error: {error}</p>;
   }
-
+  //Retorno do código(irei explicar o passo a passo)
   return (
     <div className="container">
       <h1 className="text-3xl font-pokemon font-bold text-white flex items-center mb-10 justify-center">
@@ -95,7 +108,7 @@ function App() {
             type="text"
             value={searchText}
             onChange={(e) => filterByText(e.target.value)}
-            className="border border-black-300 rounded px-2 py-1 text-black"
+            className="border border-black-300 rounded px-2 py-1"
             placeholder='Text a Pokémon name here...'
           />
         </div>
@@ -116,6 +129,8 @@ function App() {
             <option value="flying" className='text-black'>Flying</option>
             <option value="poison" className='text-black'>Poison</option>
             <option value="bug" className='text-black'>Bug</option>
+            <option value="ground" className='text-black'>Ground</option>
+            <option value="psychic" className='text-black'>Psychic</option>
           </select>
         </div>
       </div>
@@ -132,7 +147,7 @@ function App() {
 
 const Table = ({ data }) => {
   return (
-      <table className="min-w-full divide-y divide-darkblue-200 justify-center table-rounded">
+      <table className="min-w-full divide-y divide-darkblue-200 justify-center">
         <thead>
           <tr>
             <th className="py-3 px-6 text-left">Name</th>
