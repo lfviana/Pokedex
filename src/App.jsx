@@ -200,6 +200,6 @@ function Pagination({ pokemonsPerPage, totalPokemons, currentPage, paginate }) {
     </nav>
   );  
 }
-
+//EXPORTAÇÃO DO PROJETO.
 export default App;
 
