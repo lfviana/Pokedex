@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import './App.css';
 
@@ -27,11 +28,20 @@ function App() {
         data.results.map(async (pokemon) => {
           const response = await fetch(pokemon.url);
           const data = await response.json();
+          const speciesResponse = await fetch(data.species.url);
+          const speciesData = await speciesResponse.json();
+          const evolutionChainResponse = await fetch(speciesData.evolution_chain.url);
+          const evolutionChainData = await evolutionChainResponse.json();
+          const abilities = data.abilities.map((ability) => ability.ability.name);
+          const evolutions = getEvolutions(evolutionChainData.chain);
+
           return {
             id: data.id,
             name: pokemon.name,
             photo: data.sprites.front_default,
             types: data.types.map((type) => type.type.name),
+            abilities: abilities,
+            evolutions: evolutions,
           };
         })
       );
@@ -42,6 +52,24 @@ function App() {
       setLoading(false);
       return;
     }
+  };
+
+  const getEvolutions = (evolutionChain) => {
+    const evolutions = [];
+
+    const traverseChain = (chain) => {
+      evolutions.push(chain.species.name);
+
+      if (chain.evolves_to.length > 0) {
+        chain.evolves_to.forEach((evolution) => {
+          traverseChain(evolution);
+        });
+      }
+    };
+
+    traverseChain(evolutionChain);
+
+    return evolutions;
   };
 
   const indexOfLastPokemon = currentPage * pokemonsPerPage;
@@ -166,6 +194,8 @@ function App() {
           name={selectedPokemon.name}
           photo={selectedPokemon.photo}
           types={selectedPokemon.types}
+          abilities={selectedPokemon.abilities}
+          evolutions={selectedPokemon.evolutions}
           onClose={() => setSelectedPokemon(null)}
         />
       )}
@@ -204,27 +234,50 @@ const Table = ({ data, onPokemonClick, onPokemonMouseEnter, onPokemonMouseLeave,
   );
 };
 
-const PokemonCard = ({ name, photo, types, onClose }) => {
+const PokemonCard = ({ name, photo, types, abilities, evolutions, onClose }) => {
   return (
-    <div className='fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-80'>
-      <div className='bg-white rounded-lg p-8 max-w-sm'>
-        <h2 className='text-2xl font-pokemon font-bold text-black capitalize'>{name}</h2>
-        <div className='flex justify-center mt-4'>
-          <img src={photo} alt={name} className='w-48 h-48' />
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-80">
+      <div className="bg-white rounded-lg p-8 max-w-md shadow-lg">
+        <div className="text-center">
+          <h2 className="text-3xl font-pokemon font-bold text-black capitalize mb-4">{name}</h2>
+          <img src={photo} alt={name} className="w-40 h-40 mx-auto rounded-full mb-4" />
         </div>
-        <div className='mt-4'>
-          <h3 className='text-xl font-pokemon font-bold text-black'>Types:</h3>
-          <ul className='text-base font-pokemon'>
+        <div className="text-center">
+          <h3 className="text-lg font-pokemon font-bold text-black mb-2">Types:</h3>
+          <ul className="flex justify-center">
             {types.map((type) => (
-              <li key={type} className='capitalize'>
+              <li
+                key={type}
+                className="text-sm px-3 py-1 mx-1 mb-2 rounded-full bg-blue-500 text-white font-semibold"
+              >
                 {type}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="mt-4">
+          <h3 className="text-lg font-pokemon font-bold text-black mb-2">Abilities:</h3>
+          <ul className="text-base font-pokemon">
+            {abilities.map((ability) => (
+              <li key={ability} className="capitalize">
+                {ability}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="mt-4">
+          <h3 className="text-lg font-pokemon font-bold text-black mb-2">Evolutions:</h3>
+          <ul className="text-base font-pokemon">
+            {evolutions.map((evolution) => (
+              <li key={evolution} className="capitalize">
+                {evolution}
               </li>
             ))}
           </ul>
         </div>
         <button
           onClick={onClose}
-          className='mt-6 py-2 px-4 font-pokemon font-bold text-black bg-red-500 hover:bg-red-600 focus:bg-red-700 rounded'
+          className="mt-6 py-2 px-4 font-pokemon font-bold text-white bg-red-500 hover:bg-red-600 focus:bg-red-700 rounded-full w-full"
         >
           Close
         </button>
@@ -232,6 +285,7 @@ const PokemonCard = ({ name, photo, types, onClose }) => {
     </div>
   );
 };
+
 
 const Pagination = ({ pokemonsPerPage, totalPokemons, currentPage, paginate }) => {
   const pageNumbers = [];
@@ -241,17 +295,12 @@ const Pagination = ({ pokemonsPerPage, totalPokemons, currentPage, paginate }) =
 
   return (
     <nav className='mt-8 flex justify-center'>
-      <ul className='pagination flex'>
+      <ul className='pagination flex flex-wrap'>
         {pageNumbers.map((number) => (
           <li
             key={number}
-            className={`cursor-pointer mx-1 px-3 py-1 rounded-lg ${
-              number === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'
-            }`}
+            className={`cursor-pointer mx-1 px-3 py-1 rounded-lg ${number === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'} md:mx-2 md:px-4 md:py-2 md:rounded-xl md:text-base`}
             onClick={() => paginate(number)}
-            style={{ transition: 'transform 0.3s' }}
-            onMouseEnter={(e) => (e.target.style.transform = 'scale(1.1)')}
-            onMouseLeave={(e) => (e.target.style.transform = 'scale(1)')}
           >
             {number}
           </li>
@@ -260,7 +309,6 @@ const Pagination = ({ pokemonsPerPage, totalPokemons, currentPage, paginate }) =
     </nav>
   );
 };
-
 
 export default App;
 
