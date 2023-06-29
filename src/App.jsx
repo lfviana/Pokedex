@@ -10,6 +10,7 @@ function App() {
   const [selectedType, setSelectedType] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [selectedPokemon, setSelectedPokemon] = useState(null);
+  const [hoveredPokemon, setHoveredPokemon] = useState(null);
 
   useEffect(() => {
     fetchPokemonList();
@@ -27,6 +28,7 @@ function App() {
           const response = await fetch(pokemon.url);
           const data = await response.json();
           return {
+            id: data.id,
             name: pokemon.name,
             photo: data.sprites.front_default,
             types: data.types.map((type) => type.type.name),
@@ -62,6 +64,14 @@ function App() {
 
   const handlePokemonClick = (pokemon) => {
     setSelectedPokemon(pokemon);
+  };
+
+  const handlePokemonMouseEnter = (pokemon) => {
+    setHoveredPokemon(pokemon);
+  };
+
+  const handlePokemonMouseLeave = () => {
+    setHoveredPokemon(null);
   };
 
   const filteredPokemons = currentPokemons.filter((pokemon) => {
@@ -144,7 +154,13 @@ function App() {
           </select>
         </div>
       </div>
-      <Table data={filteredPokemons} onPokemonClick={handlePokemonClick} />
+      <Table
+        data={filteredPokemons}
+        onPokemonClick={handlePokemonClick}
+        onPokemonMouseEnter={handlePokemonMouseEnter}
+        onPokemonMouseLeave={handlePokemonMouseLeave}
+        hoveredPokemon={hoveredPokemon}
+      />
       {selectedPokemon && (
         <PokemonCard
           name={selectedPokemon.name}
@@ -158,7 +174,7 @@ function App() {
   );
 }
 
-const Table = ({ data, onPokemonClick }) => {
+const Table = ({ data, onPokemonClick, onPokemonMouseEnter, onPokemonMouseLeave, hoveredPokemon }) => {
   return (
     <table className='min-w-full divide-y divide-darkblue-200 justify-center rounded-lg'>
       <thead>
@@ -168,8 +184,19 @@ const Table = ({ data, onPokemonClick }) => {
       </thead>
       <tbody className='bg-white divide-y divide-gray-200'>
         {data.map((pokemon) => (
-          <tr key={pokemon.name} onClick={() => onPokemonClick(pokemon)}>
-            <td className='py-4 px-6 text-center cursor-pointer capitalize'>{pokemon.name.toUpperCase()}</td>
+          <tr
+            key={pokemon.name}
+            onClick={() => onPokemonClick(pokemon)}
+            onMouseEnter={() => onPokemonMouseEnter(pokemon)}
+            onMouseLeave={() => onPokemonMouseLeave()}
+          >
+            <td
+              className={`py-4 px-6 text-center cursor-pointer capitalize ${
+                hoveredPokemon === pokemon ? 'text-blue-500 font-bold' : ''
+              }`}
+            >
+              {pokemon.name.toUpperCase()}
+            </td>
           </tr>
         ))}
       </tbody>
@@ -181,41 +208,24 @@ const PokemonCard = ({ name, photo, types, onClose }) => {
   return (
     <div className='fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-80'>
       <div className='bg-white rounded-lg p-8 max-w-sm'>
-        <h2 className='text-xl font-bold mb-4'>{name}</h2>
-        <div className='flex flex-col items-center mb-4'>
-          <img src={photo} alt={name} className='w-48 h-48 mb-4' />
-          <div className='flex'>
-            {types.map((type) => (
-              <span
-                key={type}
-                className={`rounded-full text-white capitalize text-xs py-1 px-2 mx-1 ${
-                  type === 'grass'
-                    ? 'bg-green-500'
-                    : type === 'fire'
-                    ? 'bg-red-500'
-                    : type === 'water'
-                    ? 'bg-blue-500'
-                    : type === 'electric'
-                    ? 'bg-yellow-500'
-                    : type === 'normal'
-                    ? 'bg-gray-500'
-                    : type === 'flying'
-                    ? 'bg-indigo-500'
-                    : type === 'poison'
-                    ? 'bg-purple-500'
-                    : type === 'bug'
-                    ? 'bg-green-500'
-                    : type === 'ground'
-                    ? 'bg-yellow-900'
-                    : 'bg-pink-500'
-                }`}
-              >
-                {type}
-              </span>
-            ))}
-          </div>
+        <h2 className='text-2xl font-pokemon font-bold text-black capitalize'>{name}</h2>
+        <div className='flex justify-center mt-4'>
+          <img src={photo} alt={name} className='w-48 h-48' />
         </div>
-        <button className='text-sm bg-red-500 text-white px-4 py-2 rounded' onClick={onClose}>
+        <div className='mt-4'>
+          <h3 className='text-xl font-pokemon font-bold text-black'>Types:</h3>
+          <ul className='text-base font-pokemon'>
+            {types.map((type) => (
+              <li key={type} className='capitalize'>
+                {type}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <button
+          onClick={onClose}
+          className='mt-6 py-2 px-4 font-pokemon font-bold text-black bg-red-500 hover:bg-red-600 focus:bg-red-700 rounded'
+        >
           Close
         </button>
       </div>
@@ -225,34 +235,35 @@ const PokemonCard = ({ name, photo, types, onClose }) => {
 
 const Pagination = ({ pokemonsPerPage, totalPokemons, currentPage, paginate }) => {
   const pageNumbers = [];
-
   for (let i = 1; i <= Math.ceil(totalPokemons / pokemonsPerPage); i++) {
     pageNumbers.push(i);
   }
 
   return (
-    <div className='flex justify-center mt-8'>
-      <nav>
-        <ul className='flex space-x-2'>
-          {pageNumbers.map((number) => (
-            <li key={number}>
-              <button
-                className={`bg-gray-200 text-black hover:bg-blue-500 hover:text-white py-2 px-4 rounded ${
-                  number === currentPage ? 'bg-blue-500 text-white' : ''
-                }`}
-                onClick={() => paginate(number)}
-              >
-                {number}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+    <nav className='mt-8 flex justify-center'>
+      <ul className='pagination flex'>
+        {pageNumbers.map((number) => (
+          <li
+            key={number}
+            className={`cursor-pointer mx-1 px-3 py-1 rounded-lg ${
+              number === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'
+            }`}
+            onClick={() => paginate(number)}
+            style={{ transition: 'transform 0.3s' }}
+            onMouseEnter={(e) => (e.target.style.transform = 'scale(1.1)')}
+            onMouseLeave={(e) => (e.target.style.transform = 'scale(1)')}
+          >
+            {number}
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 };
 
+
 export default App;
+
 
 
 
